@@ -476,14 +476,14 @@ func (r *raftFsm) appendEntry(es ...*proto.Entry) {
 
 func (r *raftFsm) bcastReadOnly() {
 	index := r.readOnly.lastPending()
-	if index == 0 {
-		return
-	}
 	if logger.IsEnableDebug() {
 		logger.Debug("raft[%d] bcast readonly index: %d", r.id, index)
 	}
-	for id := range r.replicas {
+	for id, replica := range r.replicas {
 		if id == r.config.NodeID {
+			continue
+		}
+		if index == 0 && replica.active {
 			continue
 		}
 		msg := proto.GetMessage()
